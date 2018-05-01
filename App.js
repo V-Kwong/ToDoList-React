@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { StyleSheet, Text, View, 
+import { StyleSheet, Text, View, FlatList,
   TouchableOpacity, TextInput, ScrollView } from 'react-native';
 
 const styles = StyleSheet.create({
@@ -69,15 +69,28 @@ const styles = StyleSheet.create({
 export default class App extends React.Component {
 
   addItem = (item) => {
-    //const {dispatch} = this.props
-    //dispatch(actionCreators.addItem(item))
+    const {dispatch} = this.props
+    dispatch(actionCreators.addItem(item))
+  }
+
+  removeItem = (index) => {
+    const {dispatch} = this.props
+    dispatch(actionCreators.removeItem(index))
+  }
+
+  toggleItemCompleted = (index) => {
+    const {dispatch} = this.props
+    dispatch(actionCreators.toggleItemCompleted(index))
   }
 
   removeCompleted = () => {
-
+    const {dispatch} = this.props
+    dispatch(actionCreators.removeCompleted())
   }
 
   render() {
+    const {items} = this.props
+    
     return (
       <View style={styles.container}>
         <Title> Todo List </Title>
@@ -86,7 +99,11 @@ export default class App extends React.Component {
           onSubmit={this.addItem}
         />
         <View style={styles.divider}/>
-        <Text>Changes you make will automatically reload.</Text>
+        <List
+          items={items}
+          onRemoveItem={this.removeItem}
+          onToggleItemCompleted={this.toggleItemCompleted}
+        />
         <View style={styles.divider}/>
         <Footer onRemoveCompleted={this.removeCompleted} />
       </View>
@@ -160,7 +177,37 @@ class Checkbox extends Component {
 class List extends Component {
 
   renderItem = (item, i) => {
-    
+    const {onToggleItemCompleted, onRemoveItem} = this.props
+    const itemStyle = item.completed ? [styles.item, styles.completed] : styles.item
+
+    return (
+      <View key={i} style={itemStyle}>
+        <Text> {item.label} </Text>
+        <View style={styles.rightSection}>
+          <Checkbox
+            isChecked={item.completed}
+            onToggle={() => onToggleItemCompleted(i)}
+          />
+          <TouchableOpacity onPress={() => onRemoveItem(i)}>
+            <Text style={styles.remove}> &times; </Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    )
+  }
+
+  render() {
+    const {items} = this.props
+
+    return (
+      // <ScrollView style={styles.listContainer}>
+      //   {items.map(this.renderItem)}
+      // </ScrollView>
+      <FlatList
+        data={items}
+        renderItem={this.renderItem}
+      />
+    )
   }
 }
 
